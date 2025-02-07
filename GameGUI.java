@@ -21,11 +21,11 @@ public class GameGUI extends JFrame implements KeyListener, MouseListener {
 private final int TILE_SIZE = 40; // Size of each tile in the maze
 private int[][] maze = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 2, 0, 0, 0, 2, 0, 0, 1},
-    {1, 0, 1, 1, 1, 1, 1, 0, 1, 1},
+    {1, 0, 2, 0, 0, 0, 2, 0, 0, 0},
+    {1, 0, 1, 1, 1, 1, 1, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 1, 0, 0, 1},
-    {1, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-    {1, 0, 0, 0, 0, 1, 0, 0, 1, 1},
+    {1, 1, 1, 0, 0, 1, 1, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 2, 1, 1, 0, 0, 0, 0, 1, 1},
     {1, 0, 0, 1, 1, 1, 2, 1, 1, 1},
     {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
@@ -160,11 +160,6 @@ private void drawRoom3(Graphics g) {
         g.drawString("Exit ➡", 55, 190);
     }
 
-    // Draw Player
-    g.setColor(Color.PINK);
-    g.fillOval(playerX, playerY, 30, 30);
-}
-
 
     private void drawInventory(Graphics g) {
         g.setColor(Color.BLACK);
@@ -223,13 +218,15 @@ public void keyPressed(KeyEvent e) {
         playerY = 150;
     }
 
-    // ✅ NEW: Room 2 → Room 3 Transition
-    if (currentRoom == 2 && playerX >= 500 && playerY >= 150 && playerY <= 230) {
-        JOptionPane.showMessageDialog(this, "🪞 You entered Room 3!");
-        currentRoom = 3;
-        playerX = 100; 
-        playerY = 150;
+
+     // Room 2 → Room 3 Transition (Exit at 2nd row, last column)
+    if (currentRoom == 2 && playerTileX == 9 && playerTileY == 1) {
+    JOptionPane.showMessageDialog(this, "🎉 You completed the maze and entered Room 3!");
+    currentRoom = 3;
+    playerX = 100;  // Set new position in Room 3
+    playerY = 150;
     }
+
 
     // ✅ NEW: Room 3 Fake Door
     if (currentRoom == 3 && playerX >= 500 && playerY >= 150 && playerY <= 230) {
