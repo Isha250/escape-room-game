@@ -10,6 +10,7 @@ public class GameGUI extends JFrame implements KeyListener, MouseListener {
     private boolean cupboardOpen = false;
     private boolean doorUnlocked = false;
     private int currentRoom = 1;
+    private boolean mirrorPuzzleSolved = false;
     private ArrayList<String> inventory = new ArrayList<>(); // Inventory List
     private Image tileImage, lavaImage; // Declare tile and lava images
 
@@ -68,12 +69,13 @@ private int[][] maze = {
 
         g.drawImage(playerImage, playerX, playerY, 40, 40, this);
 
-        if (currentRoom == 1) {
-            drawRoom1(g);
-        } else if (currentRoom == 2) {
-            drawRoom2(g);
-        }
-
+       if (currentRoom == 1) {
+        drawRoom1(g);
+    } else if (currentRoom == 2) {
+        drawRoom2(g);
+    } else if (currentRoom == 3) {
+        drawRoom3(g);
+    }
         drawInventory(g);
     }
 
@@ -134,6 +136,35 @@ private int[][] maze = {
     g.drawString("Welcome to Room 2! Avoid the lava and find your way out!", 200, 30);
 }
 
+private void drawRoom3(Graphics g) {
+    // Walls with Perspective
+    g.setColor(new Color(180, 180, 180));
+    g.fillPolygon(new int[]{50, 550, 500, 100}, new int[]{50, 50, 350, 350}, 4);
+
+    // Mirror Wall
+    g.setColor(Color.LIGHT_GRAY);
+    g.fillRect(250, 100, 100, 200);
+    g.setColor(Color.BLACK);
+    g.drawString("🪞 Mirror", 270, 120);
+
+    // Fake Door
+    g.setColor(Color.RED);
+    g.fillRect(500, 150, 50, 80);
+    g.setColor(Color.BLACK);
+    g.drawString("🚪 Fake Door", 505, 190);
+
+    // Real Hidden Door (only if puzzle solved)
+    if (mirrorPuzzleSolved) {
+        g.setColor(Color.GREEN);
+        g.fillRect(50, 150, 50, 80);
+        g.drawString("Exit ➡", 55, 190);
+    }
+
+    // Draw Player
+    g.setColor(Color.PINK);
+    g.fillOval(playerX, playerY, 30, 30);
+}
+
 
     private void drawInventory(Graphics g) {
         g.setColor(Color.BLACK);
@@ -143,23 +174,21 @@ private int[][] maze = {
 @Override
 public void keyPressed(KeyEvent e) {
     int key = e.getKeyCode();
-    
+
     // Room 2 lava and wall collision detection
     int playerTileX = playerX / TILE_SIZE;
     int playerTileY = playerY / TILE_SIZE;
 
-    // Check if the player is stepping on lava or wall
     if (currentRoom == 2) {
         if (maze[playerTileY][playerTileX] == 1 || maze[playerTileY][playerTileX] == 2) {
-            // Player is stepping on a wall or lava, reset position
             JOptionPane.showMessageDialog(this, "❌ You can't go through walls or lava! Restarting Room 2...");
-            playerX = 100; // Reset player position in Room 2
+            playerX = 100; 
             playerY = 150;
-            return; // Prevent further movement
+            return;
         }
     }
 
-    // Movement logic (same as before)
+    // Movement logic
     if (key == KeyEvent.VK_LEFT && playerX > 50) {
         playerX -= STEP;
         playerDirection = "left";
@@ -177,7 +206,7 @@ public void keyPressed(KeyEvent e) {
         playerDirection = "down";
     }
 
-    // Existing logic for room transitions (same as before)
+    // Room Transitions
     if (currentRoom == 1 && doorUnlocked && playerX >= 500 && playerY >= 150 && playerY <= 230) {
         JOptionPane.showMessageDialog(this, "🚪 You entered Room 2!");
         currentRoom = 2;
@@ -194,50 +223,85 @@ public void keyPressed(KeyEvent e) {
         playerY = 150;
     }
 
+    // ✅ NEW: Room 2 → Room 3 Transition
+    if (currentRoom == 2 && playerX >= 500 && playerY >= 150 && playerY <= 230) {
+        JOptionPane.showMessageDialog(this, "🪞 You entered Room 3!");
+        currentRoom = 3;
+        playerX = 100; 
+        playerY = 150;
+    }
+
+    // ✅ NEW: Room 3 Fake Door
+    if (currentRoom == 3 && playerX >= 500 && playerY >= 150 && playerY <= 230) {
+        JOptionPane.showMessageDialog(this, "🚪 It's a fake door! Solve the mirror puzzle first.");
+    }
+
+    // ✅ NEW: Room 3 Exit (If Puzzle Solved)
+    if (currentRoom == 3 && playerX <= 50 && playerY >= 150 && playerY <= 230 && mirrorPuzzleSolved) {
+        JOptionPane.showMessageDialog(this, "🎉 You escaped Room 3!");
+        currentRoom = 1; 
+        playerX = 450;
+        playerY = 150;
+    }
+
     repaint();
 }
 
 
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-        int mouseX = e.getX();
-        int mouseY = e.getY();
+public void mouseClicked(MouseEvent e) {
+    int mouseX = e.getX();
+    int mouseY = e.getY();
 
-        if (currentRoom == 1) {
-            if (mouseX >= 180 && mouseX <= 200 && mouseY >= 110 && mouseY <= 120) {
-                chitRead = true;
-                inventory.add("Chit");
-                JOptionPane.showMessageDialog(this, "📜 The chit says: 123");
-            }
+    if (currentRoom == 1) {
+        if (mouseX >= 180 && mouseX <= 200 && mouseY >= 110 && mouseY <= 120) {
+            chitRead = true;
+            inventory.add("Chit");
+            JOptionPane.showMessageDialog(this, "📜 The chit says: 123");
+        }
 
-            if (mouseX >= 350 && mouseX <= 420 && mouseY >= 100 && mouseY <= 220) {
-                if (chitRead) {
-                    cupboardOpen = true;
-                    JOptionPane.showMessageDialog(this, "🗄 You opened the cupboard! There's a key inside.");
-                } else {
-                    JOptionPane.showMessageDialog(this, "🔒 The cupboard is locked. Maybe a clue can help?");
-                }
-            }
-
-            if (cupboardOpen && !inventory.contains("Key") && mouseX >= 360 && mouseX <= 370 && mouseY >= 150 && mouseY <= 160) {
-                inventory.add("Key");
-                JOptionPane.showMessageDialog(this, "🔑 You picked up the Key!");
-            }
-
-            if (inventory.contains("Key") && mouseX >= 500 && mouseX <= 550 && mouseY >= 150 && mouseY <= 230) {
-                String code = JOptionPane.showInputDialog(this, "Enter the 3-digit code to unlock the door:");
-                if (code != null && code.equals("123")) {
-                    doorUnlocked = true;
-                    JOptionPane.showMessageDialog(this, "✅ Correct code! The door is now unlocked.");
-                } else {
-                    JOptionPane.showMessageDialog(this, "❌ Incorrect code! Try again.");
-                }
+        if (mouseX >= 350 && mouseX <= 420 && mouseY >= 100 && mouseY <= 220) {
+            if (chitRead) {
+                cupboardOpen = true;
+                JOptionPane.showMessageDialog(this, "🗄 You opened the cupboard! There's a key inside.");
+            } else {
+                JOptionPane.showMessageDialog(this, "🔒 The cupboard is locked. Maybe a clue can help?");
             }
         }
 
-        repaint();
+        if (cupboardOpen && !inventory.contains("Key") && mouseX >= 360 && mouseX <= 370 && mouseY >= 150 && mouseY <= 160) {
+            inventory.add("Key");
+            JOptionPane.showMessageDialog(this, "🔑 You picked up the Key!");
+        }
+
+        if (inventory.contains("Key") && mouseX >= 500 && mouseX <= 550 && mouseY >= 150 && mouseY <= 230) {
+            String code = JOptionPane.showInputDialog(this, "Enter the 3-digit code to unlock the door:");
+            if (code != null && code.equals("123")) {
+                doorUnlocked = true;
+                JOptionPane.showMessageDialog(this, "✅ Correct code! The door is now unlocked.");
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Incorrect code! Try again.");
+            }
+        }
     }
+
+    // ✅ NEW: Room 3 Mirror Puzzle
+    if (currentRoom == 3) {
+        if (mouseX >= 250 && mouseX <= 350 && mouseY >= 100 && mouseY <= 300) {
+            String answer = JOptionPane.showInputDialog(this, "Solve the mirror puzzle: What reflects but never speaks?");
+            if (answer != null && answer.equalsIgnoreCase("mirror")) {
+                mirrorPuzzleSolved = true;
+                JOptionPane.showMessageDialog(this, "✅ Puzzle Solved! The hidden door is now open.");
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Incorrect! Try again.");
+            }
+        }
+    }
+
+    repaint();
+}
+
 
     @Override
     public void keyReleased(KeyEvent e) {}
