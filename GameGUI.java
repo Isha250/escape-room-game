@@ -137,6 +137,15 @@ private int[][] maze = {
 }
 
 private void drawRoom3(Graphics g) {
+    // Draw Player (Ensure it's drawn last)
+Image playerImage = switch (playerDirection) {
+    case "right" -> playerRight;
+    case "left" -> playerLeft;
+    case "up" -> playerUp;
+    default -> playerDown; // Default to down
+};
+g.drawImage(playerImage, playerX, playerY, 40, 40, this);
+
     // Walls with Perspective
     g.setColor(new Color(180, 180, 180));
     g.fillPolygon(new int[]{50, 550, 500, 100}, new int[]{50, 50, 350, 350}, 4);
@@ -151,7 +160,7 @@ private void drawRoom3(Graphics g) {
     g.setColor(Color.RED);
     g.fillRect(500, 150, 50, 80);
     g.setColor(Color.BLACK);
-    g.drawString("🚪 Fake Door", 505, 190);
+    g.drawString("🚪 Door", 505, 190);
 
     // Real Hidden Door (only if puzzle solved)
     if (mirrorPuzzleSolved) {
@@ -160,9 +169,6 @@ private void drawRoom3(Graphics g) {
         g.drawString("Exit ➡", 55, 190);
     }
 
-    // Draw Player
-    g.setColor(Color.PINK);
-    g.fillOval(playerX, playerY, 30, 30);
 }
 
 
