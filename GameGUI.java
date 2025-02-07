@@ -160,6 +160,11 @@ private void drawRoom3(Graphics g) {
         g.drawString("Exit ➡", 55, 190);
     }
 
+    // Draw Player
+    g.setColor(Color.PINK);
+    g.fillOval(playerX, playerY, 30, 30);
+}
+
 
     private void drawInventory(Graphics g) {
         g.setColor(Color.BLACK);
